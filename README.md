@@ -31,7 +31,7 @@ We could write another NIF that checks and replaces the `NAN`s and `INFINITY`s t
 
 If only we could do that in pure Erlang/Elixir, oh, we probably can!
 
-Nothing is better than the good old school cast, 
+In C/C++, nothing is better than the good old school cast, 
 
 ```c
 #include <math.h>
@@ -40,18 +40,17 @@ Nothing is better than the good old school cast,
 
 int main() {
   float f32 = INFINITY;
-  uint32_t f32_in_i32 = *(uint32_t*)f32;
-  printf("INFINITY in uint32 representation: %d\n", f32_in_i32);
+  uint32_t f32_in_u32 = *(uint32_t*)f32;
+  printf("INFINITY in uint32 representation: %d\n", f32_in_u32);
   // NAN in int32 representation: 2139095040
-  
 }
 ```
 
-Note that the values here depends on the floating-point standard your compiler uses. And `NAN`s/`INFINITY`s may have multiple values in the corresponding integer representation.
+Note that the values here depends on the floating-point standard that your compiler uses. And `NAN`s/`INFINITY`s may have multiple values in the corresponding integer representation.
 
-For example, a floating-point value is NAN as long as their exponent field is `1111 1111` (`0xFF`) and the fraction field is non-zero in [IEEE 754-1985](https://en.wikipedia.org/wiki/IEEE_754-1985#Representation_of_non-numbers). The most-significant-bit for `NAN` can be either `0` or `1`.
+For example, a floating-point value is `NAN` as long as their exponent field is `1111 1111` (`0xFF`) and the fraction field is non-zero in [IEEE 754-1985](https://en.wikipedia.org/wiki/IEEE_754-1985#Representation_of_non-numbers). The most-significant-bit for `NAN` can be either `0` or `1`.
 
-Now, whenever you have a `MatchError` in Elixir, you can refer to the IEEE standard and test the corresponding fields. For example, for a 32-bit float value, if the exponent field is `1111 1111` (`0xFF`) and the fraction field is non-zero, then it is `NAN` in IEEE 754-1985.
+Now, whenever you have a `MatchError` in Elixir, you can refer to the IEEE standard and test the corresponding fields. For example, for a 32-bit float value, if the exponent field is `1111 1111` (`0xFF`) and the fraction field is non-zero, then it is `NAN` according to IEEE 754-1985.
 
 In some sense, 32-bit and 64-bit float values can be decomposed using the following match
 
@@ -69,7 +68,7 @@ In some sense, 32-bit and 64-bit float values can be decomposed using the follow
 << sign::1, exponent_field::11, fraction_field::52 >> = f64_value_in_binary
 ```
 
-Sadly, for little-endian, the bits in memory are different with their byte form. For example, `0xFFC0_0000` (`<<255, 192, 0, 0>>`) is a valid `NAN` for 32-bit big-endian float value. The bitstring for `0xFFC0_0000` is
+Unfortunately, for float values in little-endian, the bits in memory are quite different. For example, `0xFFC0_0000` (`<<255, 192, 0, 0>>`) is a valid `NAN` if it is a 32-bit big-endian float value. The bitstring for `0xFFC0_0000` is
 
 ```
 0b1_11111111_10000000000000000000000
@@ -83,13 +82,13 @@ And we can do the following match
 4194304 = fraction_field
 ```
 
-But for the same `NAN` but in little-endian, we see `0x0000_C0FF` (`<<0, 0, 192, 255>>`), and the bitstring for that is
+For the same `NAN` but in little-endian, we see `0x0000_C0FF` (`<<0, 0, 192, 255>>`), and the bitstring for that is
 
 ```
 0b00000000_00000000_11000000_11111111
 ```
 
-Therefore, when you try to match the in Elixir using the following statement, you will end up with wrong values
+Therefore, when you try to match it in Elixir using the following statement, you will end up with wrong values
 
 ```elixir
 << fraction_field::23, exponent_field::8, sign::1 >> = << 0, 0, 192, 255 >>
@@ -102,7 +101,7 @@ Technically, we can swap the byte order and match the new binary using the big-e
 
 Another possible approach is to use more fields in the match statement, and assemble them back to the correct `sign`, `exponent_field` and `fraction_field` later. But it is obviously more complicated and has more operations for handling one float number.
 
-The first approach will swap 4 bytes (or 8 bytes) and will need bit masks in the backend when we match the new binary with the bitstring. It should be fast enough, but do we have any other options?
+The first approach will swap 4 bytes (or 8 bytes) and will need bit masks in the backend when we match the new binary to the bitstring. It should be fast enough, but do we have any other options?
 
 For most if not all real-life cases, programs will use fixed values for `NAN`s and `INFINITY`s, for examples,
 
