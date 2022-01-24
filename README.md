@@ -23,9 +23,9 @@ Erlang does not allow `NAN` and `INFINITY` in their floating-point terms. There 
 
 On the other hand, Erlang allows NIFs to send binary data (that represents a list of floating-point values). And sometimes, you cannot check for `NAN`s or `INFINITY`s in NIFs as they might be provided by a third-party and you don't have the source code.
 
-Even if you have the source code, that means you'll have maintain a fork of that NIF library and change all your libraries that depend on that third-party library to your own fork, which maps `NAN`s and `INFINITY`s to some valid value.
+Even if you have the source code, that means you'll have to maintain a fork of that NIF library and change all your libraries that depend on that third-party library to your own fork, the fork that maps `NAN`s and `INFINITY`s to some valid values.
 
-Another case is that when you have to read a binary file that contains floating-point numbers.
+Another case is that when you have to read a binary file that contains floating-point numbers in, of course, binary form.
 
 We could write another NIF that checks and replaces the `NAN`s and `INFINITY`s to valid values, but in that case, you'll have to have a compiler available in your environment.
 
