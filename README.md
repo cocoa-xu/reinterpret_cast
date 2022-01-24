@@ -21,7 +21,7 @@ be found at <https://hexdocs.pm/reinterpret_cast>.
 
 Erlang does not allow `NAN` and `INFINITY` in their floating-point terms. There is no `:math.isnan/1` or `:math.isinf/1` for the users.
 
-On the other hand, Erlang allows NIFs to send binary data. But sometimes, you cannot check for `NAN`s or `INFINITY`s in NIFs as they might be provided by a third-party and you don't have the source code.
+On the other hand, Erlang allows NIFs to send binary data (that represents a list of floating-point values). And sometimes, you cannot check for `NAN`s or `INFINITY`s in NIFs as they might be provided by a third-party and you don't have the source code.
 
 Even if you have the source code, that means you'll have maintain a fork of that NIF library and change all your libraries that depend on that third-party library to your own fork, which maps `NAN`s and `INFINITY`s to some valid value.
 
