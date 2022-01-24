@@ -126,6 +126,10 @@ Then you can use `Enum.map/2` to map illegal 32-bit little-endian float values t
 To make things easier, we also have `ReinterpretCast.cast/2` to convert the binary data to a list (or you could do that directly in the `Enum.map`, depending on the need of your workflow, e.g., say you want to save the sanitised binary to a file)
 
 ```elixir
+nan          = << 0, 0, 192, 255 >>
+positive_inf = << 0, 0, 128, 127 >>
+negative_inf = << 0, 0, 128, 255 >>
+
 "/path/to/a/binary/file"
 # read the binary file
 |> File.read!()
@@ -134,17 +138,14 @@ To make things easier, we also have `ReinterpretCast.cast/2` to convert the bina
 # deal with 32-bit little-endian float
 |> Enum.map(fn f32 -> 
      case f32 do
-        # NAN
-        << 0, 0, 192, 255 >> ->
-          << 0, 0, 0, 0>>
+        ^nan ->
+          << 0, 0, 0, 0 >>
 
-        # Positive Inf
-        << 0, 0, 128, 127 >> ->
-          << 0, 0, 0, 0>>
+        ^positive_inf ->
+          << 0, 0, 0, 0 >>
 
-        # Negative Inf
-        << 0, 0, 128, 255 >> ->
-          << 0, 0, 0, 0>>
+        ^negative_inf ->
+          << 0, 0, 0, 0 >>
           
         # legal value
         _ ->
