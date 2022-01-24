@@ -7,9 +7,9 @@ by adding `reinterpret_cast` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
-[
-{:reinterpret_cast, "~> 0.1.0"}
-]
+  [
+    {:reinterpret_cast, "~> 0.1.0", github: "cocoa-xu/reinterpret_cast"}
+  ]
 end
 ```
 
@@ -105,7 +105,7 @@ The first approach will swap 4 bytes (or 8 bytes) and will need bit masks in the
 
 For most if not all real-life cases, programs will use fixed values for `NAN`s and `INFINITY`s, for examples,
 
-```
+```elixir
 # 32-bit little-endian float
 nan          = << 0, 0, 192, 255 >>
 positive_inf = << 0, 0, 128, 127 >>
@@ -158,6 +158,15 @@ negative_inf = << 0, 0, 128, 255 >>
 |> tap(&File.write!("/ok.binary", &1))
 # convert the binary to 32-bit little-endian float values
 |> ReinterpretCast.cast({:f, 32, :little})
+```
+
+To deal with 32-bit big-endian float values, just need to change the value of `nan`, `positive_inf` and `negative_inf` to the corresponding ones,
+
+```
+# 32-bit big-endian float
+nan          = << 255, 192, 0, 0 >>
+positive_inf = << 127, 128, 0, 0 >>
+negative_inf = << 255, 128, 0, 0 >>
 ```
 
 Furthermore, we have `ReinterpretCast.cast/3`. This function can be quite handy when you have a list of numbers. This list may come from some sensor on your IoT devices, or was sent to you by another node, or you pulled it from somewhere on the Internet (e.g., the parameter file for a neural network model).
