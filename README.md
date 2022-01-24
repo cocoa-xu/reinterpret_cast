@@ -40,7 +40,7 @@ Nothing is better than the good old school cast,
 
 int main() {
   float f32 = INFINITY;
-  uint32_t f32_in_i32 = *(int32_t*)f32;
+  uint32_t f32_in_i32 = *(uint32_t*)f32;
   printf("INFINITY in uint32 representation: %d\n", f32_in_i32);
   // NAN in int32 representation: 2139095040
   
